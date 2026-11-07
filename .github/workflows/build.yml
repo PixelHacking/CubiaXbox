@@ -7,10 +7,11 @@ on:
 
 jobs:
   build:
-        runs-on: windows-2022
+    runs-on: windows-2022
     steps:
       - uses: actions/checkout@v4
-            - name: Diagnostica SDK
+
+      - name: Diagnostica SDK
         shell: pwsh
         run: |
           Get-ChildItem "C:\Program Files (x86)\Windows Kits\10\Platforms\UAP" -ErrorAction SilentlyContinue | Select-Object -ExpandProperty Name
