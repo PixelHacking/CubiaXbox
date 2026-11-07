@@ -1,0 +1,39 @@
+name: Build Cubia per Xbox
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: microsoft/setup-msbuild@v2
+
+      - name: Crea certificato di test
+        shell: pwsh
+        run: |
+          $cert = New-SelfSignedCertificate -Type Custom -Subject "CN=PixelHacking" -KeyUsage DigitalSignature -FriendlyName "Cubia" -CertStoreLocation "Cert:\CurrentUser\My" -TextExtension @("2.5.29.37={text}1.3.6.1.5.5.7.3.3", "2.5.29.19={text}")
+          $pwd = ConvertTo-SecureString -String "cubia" -Force -AsPlainText
+          Export-PfxCertificate -Cert $cert -FilePath "$env:GITHUB_WORKSPACE\CubiaXbox\Cubia_Key.pfx" -Password $pwd
+
+      - name: Restore
+        run: msbuild CubiaXbox\CubiaXbox.csproj /t:Restore /p:Configuration=Release /p:Platform=x64
+
+      - name: Build pacchetto
+        run: >
+          msbuild CubiaXbox\CubiaXbox.csproj
+          /p:Configuration=Release /p:Platform=x64
+          /p:AppxBundle=Never /p:UapAppxPackageBuildMode=SideloadOnly
+          /p:AppxPackageSigningEnabled=true
+          /p:PackageCertificateKeyFile="$env:GITHUB_WORKSPACE\CubiaXbox\Cubia_Key.pfx"
+          /p:PackageCertificatePassword=cubia
+          /p:AppxPackageDir="$env:GITHUB_WORKSPACE\AppPackages\"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Cubia-Xbox-appx
+          path: AppPackages/
