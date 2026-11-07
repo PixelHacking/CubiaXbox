@@ -7,9 +7,14 @@ on:
 
 jobs:
   build:
-    runs-on: windows-latest
+        runs-on: windows-2022
     steps:
       - uses: actions/checkout@v4
+            - name: Diagnostica SDK
+        shell: pwsh
+        run: |
+          Get-ChildItem "C:\Program Files (x86)\Windows Kits\10\Platforms\UAP" -ErrorAction SilentlyContinue | Select-Object -ExpandProperty Name
+          Get-ChildItem "C:\Program Files\Microsoft Visual Studio" | Select-Object -ExpandProperty Name
 
       - uses: microsoft/setup-msbuild@v2
 
